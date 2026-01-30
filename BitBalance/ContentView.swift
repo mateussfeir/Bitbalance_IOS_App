@@ -22,7 +22,7 @@ struct CategorySummary: Identifiable {
 
 struct ContentView: View {
 
-    // Dummy category totals (later: computed from holdings)
+    // Dummy category totals
     private let categories: [CategorySummary] = [
         .init(category: .realEstate, totalValue: 170_000.00),
         .init(category: .crypto, totalValue: 94_479.00),
@@ -55,7 +55,22 @@ struct ContentView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
 
-                    // 1) Composition Table
+                    // TOP HEADER: Net Worth only
+                    NeonCard(title: nil) {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("NET WORTH")
+                                .font(.system(.headline, design: .monospaced))
+                                .foregroundStyle(FuturisticTheme.accent)
+
+                            Spacer()
+
+                            Text("$\(totalNetWorth, specifier: "%.2f")")
+                                .font(.system(size: 28, weight: .bold, design: .monospaced))
+                                .foregroundStyle(FuturisticTheme.good)
+                        }
+                    }
+
+                    // 1) Composition Table (TYPE + TOTAL + %)
                     NeonCard(title: "Net Worth Composition") {
                         // Header
                         HStack {
@@ -99,25 +114,7 @@ struct ContentView: View {
 
                             Divider().opacity(0.18)
                         }
-
-                        // Total footer
-                        HStack {
-                            Text("TOTAL")
-                                .font(.system(.headline, design: .monospaced))
-                                .foregroundStyle(FuturisticTheme.accent)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-
-                            Text("$\(totalNetWorth, specifier: "%.2f")")
-                                .font(.system(.headline, design: .monospaced))
-                                .foregroundStyle(.white)
-                                .frame(width: 140, alignment: .trailing)
-
-                            Text("100%")
-                                .font(.system(.headline, design: .monospaced))
-                                .foregroundStyle(FuturisticTheme.good)
-                                .frame(width: 70, alignment: .trailing)
-                        }
-                        .padding(.top, 6)
+                        // ⛔️ No TOTAL footer row (intentionally removed)
                     }
 
                     // 2) Pie Chart placeholder
@@ -162,13 +159,15 @@ struct ContentView: View {
                             )
                     }
                 }
-                // ✅ SCROLL FIX: forces proper width and allows content to extend/scroll
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
             }
             .scrollIndicators(.hidden)
             .background(FuturisticTheme.bg.ignoresSafeArea())
-            .navigationTitle("BitBalance")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) { EmptyView() }
+            }
         }
     }
 }
@@ -254,4 +253,5 @@ struct OthersView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
+
 
