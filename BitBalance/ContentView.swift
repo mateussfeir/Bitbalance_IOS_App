@@ -22,38 +22,56 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Total Value")
-                    .font(.headline)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
 
-                Text("$\(totalValue, specifier: "%.2f")")
-                    .font(.largeTitle)
-                    .bold()
+                    // NET WORTH CARD
+                    NeonCard(title: "Net Worth") {
+                        Text("$\(totalValue, specifier: "%.2f")")
+                            .font(.system(size: 34, weight: .bold, design: .monospaced))
+                            .foregroundStyle(.white)
 
-                List {
-                    Section(header: Text("Assets")) {
+                        Text("Demo values (UI milestone)")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    // ASSETS CARD
+                    NeonCard(title: "Assets") {
                         ForEach(assets) { asset in
                             NavigationLink {
                                 AssetDetailView(asset: asset)
                             } label: {
                                 HStack {
-                                    VStack(alignment: .leading) {
-                                        Text(asset.symbol).font(.headline)
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(asset.symbol)
+                                            .font(.system(.headline, design: .monospaced))
+                                            .foregroundStyle(.white)
+
                                         Text("Qty: \(asset.quantity, specifier: "%.4f")")
                                             .font(.subheadline)
                                             .foregroundStyle(.secondary)
                                     }
+
                                     Spacer()
+
                                     Text("$\(asset.value, specifier: "%.2f")")
-                                        .font(.headline)
+                                        .font(.system(.headline, design: .monospaced))
+                                        .foregroundStyle(FuturisticTheme.good)
                                 }
+                                .padding(.vertical, 8)
                             }
+                            .buttonStyle(.plain)
+
+                            Divider().opacity(0.25)
                         }
                     }
+
+                    Spacer(minLength: 10)
                 }
-                .listStyle(.insetGrouped)
+                .padding()
             }
-            .padding(.top, 12)
+            .background(FuturisticTheme.bg.ignoresSafeArea())
             .navigationTitle("BitBalance")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -61,9 +79,11 @@ struct ContentView: View {
                         AddEditAssetView()
                     } label: {
                         Image(systemName: "plus")
+                            .foregroundStyle(FuturisticTheme.accent)
                     }
                 }
             }
         }
     }
 }
+
