@@ -55,7 +55,7 @@ struct ContentView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
 
-                    // TOP HEADER: Net Worth only
+                    // TOP HEADER
                     NeonCard(title: nil) {
                         HStack(alignment: .firstTextBaseline) {
                             Text("NET WORTH")
@@ -70,9 +70,8 @@ struct ContentView: View {
                         }
                     }
 
-                    // 1) Composition Table (TYPE + TOTAL + %)
+                    // 1️⃣ NET WORTH COMPOSITION TABLE
                     NeonCard(title: "Net Worth Composition") {
-                        // Header
                         HStack {
                             Text("TYPE")
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -87,7 +86,6 @@ struct ContentView: View {
 
                         Divider().opacity(0.25)
 
-                        // Rows
                         ForEach(categories) { item in
                             NavigationLink {
                                 destinationView(for: item.category)
@@ -114,46 +112,39 @@ struct ContentView: View {
 
                             Divider().opacity(0.18)
                         }
-                        // ⛔️ No TOTAL footer row (intentionally removed)
                     }
 
-                    // 2) Pie Chart placeholder
+                    // 2️⃣ PIE CHART (DUMMY DATA)
                     NeonCard(title: "Composition Pie") {
-                        Text("Pie chart will go here (dummy for now).")
+                        Text("Pie chart uses dummy data for now.")
                             .font(.system(.subheadline, design: .monospaced))
                             .foregroundStyle(.secondary)
 
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color.white.opacity(0.06))
-                            .frame(height: 220)
-                            .overlay(
-                                Text("PIE CHART")
-                                    .font(.system(.headline, design: .monospaced))
-                                    .foregroundStyle(FuturisticTheme.accent)
+                        DummyPieChart()
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.white.opacity(0.06))
                             )
                             .overlay(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                RoundedRectangle(cornerRadius: 16)
                                     .stroke(FuturisticTheme.border, lineWidth: 1)
                                     .shadow(color: FuturisticTheme.glow, radius: 10)
                             )
                     }
 
-                    // 3) Net Worth History placeholder
+                    // 3️⃣ NET WORTH HISTORY (DUMMY DATA)
                     NeonCard(title: "Net Worth History") {
-                        Text("Line chart will go here (dummy for now).")
+                        Text("Line chart uses dummy historical data for now.")
                             .font(.system(.subheadline, design: .monospaced))
                             .foregroundStyle(.secondary)
 
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color.white.opacity(0.06))
-                            .frame(height: 220)
-                            .overlay(
-                                Text("LINE CHART")
-                                    .font(.system(.headline, design: .monospaced))
-                                    .foregroundStyle(FuturisticTheme.accent)
+                        DummyLineChart()
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.white.opacity(0.06))
                             )
                             .overlay(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                RoundedRectangle(cornerRadius: 16)
                                     .stroke(FuturisticTheme.border, lineWidth: 1)
                                     .shadow(color: FuturisticTheme.glow, radius: 10)
                             )
@@ -176,82 +167,47 @@ struct ContentView: View {
 
 struct CryptoView: View {
     var body: some View {
-        VStack(spacing: 12) {
-            Text("Crypto")
-                .font(.system(.largeTitle, design: .monospaced))
-                .bold()
-            Text("Dummy holdings will be added next.")
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(FuturisticTheme.bg.ignoresSafeArea())
-        .navigationTitle("Crypto")
-        .navigationBarTitleDisplayMode(.inline)
+        categoryPlaceholder(title: "Crypto", subtitle: "Dummy holdings will be added next.")
     }
 }
 
 struct StocksView: View {
     var body: some View {
-        VStack(spacing: 12) {
-            Text("Stocks")
-                .font(.system(.largeTitle, design: .monospaced))
-                .bold()
-            Text("Dummy holdings will be added next.")
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(FuturisticTheme.bg.ignoresSafeArea())
-        .navigationTitle("Stocks")
-        .navigationBarTitleDisplayMode(.inline)
+        categoryPlaceholder(title: "Stocks", subtitle: "Dummy holdings will be added next.")
     }
 }
 
 struct RealEstateView: View {
     var body: some View {
-        VStack(spacing: 12) {
-            Text("Real Estate")
-                .font(.system(.largeTitle, design: .monospaced))
-                .bold()
-            Text("Dummy assets will be added next.")
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(FuturisticTheme.bg.ignoresSafeArea())
-        .navigationTitle("Real Estate")
-        .navigationBarTitleDisplayMode(.inline)
+        categoryPlaceholder(title: "Real Estate", subtitle: "Dummy assets will be added next.")
     }
 }
 
 struct VehiclesView: View {
     var body: some View {
-        VStack(spacing: 12) {
-            Text("Vehicles")
-                .font(.system(.largeTitle, design: .monospaced))
-                .bold()
-            Text("Dummy vehicles will be added next.")
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(FuturisticTheme.bg.ignoresSafeArea())
-        .navigationTitle("Vehicles")
-        .navigationBarTitleDisplayMode(.inline)
+        categoryPlaceholder(title: "Vehicles", subtitle: "Dummy vehicles will be added next.")
     }
 }
 
 struct OthersView: View {
     var body: some View {
-        VStack(spacing: 12) {
-            Text("Others")
-                .font(.system(.largeTitle, design: .monospaced))
-                .bold()
-            Text("Dummy items will be added next.")
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(FuturisticTheme.bg.ignoresSafeArea())
-        .navigationTitle("Others")
-        .navigationBarTitleDisplayMode(.inline)
+        categoryPlaceholder(title: "Others", subtitle: "Dummy items will be added next.")
     }
 }
 
+// MARK: - Shared Placeholder Layout
 
+@ViewBuilder
+private func categoryPlaceholder(title: String, subtitle: String) -> some View {
+    VStack(spacing: 12) {
+        Text(title)
+            .font(.system(.largeTitle, design: .monospaced))
+            .bold()
+        Text(subtitle)
+            .foregroundStyle(.secondary)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(FuturisticTheme.bg.ignoresSafeArea())
+    .navigationTitle(title)
+    .navigationBarTitleDisplayMode(.inline)
+}
