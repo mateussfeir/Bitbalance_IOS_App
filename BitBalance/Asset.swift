@@ -5,6 +5,9 @@ struct Asset: Identifiable {
     let symbol: String
     let quantity: Double
     let lastPrice: Double
+    let category: NetWorthCategory
 
-    var value: Double { quantity * lastPrice }
+    var value: Double {
+        quantity * lastPrice
+    }
 }

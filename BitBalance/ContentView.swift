@@ -18,46 +18,76 @@ struct CategorySummary: Identifiable {
     let totalValue: Double
 }
 
-// MARK: - Main View (Dashboard)
+// MARK: - Main View
 
 struct ContentView: View {
 
-    // Dummy category totals
-    private let categories: [CategorySummary] = [
-        .init(category: .realEstate, totalValue: 170_000.00),
-        .init(category: .crypto, totalValue: 94_479.00),
-        .init(category: .stocks, totalValue: 35_916.65),
-        .init(category: .vehicles, totalValue: 38_500.00),
-        .init(category: .others, totalValue: 19_200.00)
+    // REAL PORTFOLIO DATA
+    @State private var assets: [Asset] = [
+        Asset(symbol: "BTC", quantity: 1.2, lastPrice: 60000, category: .crypto),
+        Asset(symbol: "ETH", quantity: 5, lastPrice: 3000, category: .crypto),
+        Asset(symbol: "AAPL", quantity: 50, lastPrice: 190, category: .stocks),
+        Asset(symbol: "TSLA", quantity: 20, lastPrice: 250, category: .stocks),
+        Asset(symbol: "Toronto Condo", quantity: 1, lastPrice: 170000, category: .realEstate),
+        Asset(symbol: "Car", quantity: 1, lastPrice: 38500, category: .vehicles),
+        Asset(symbol: "Cash Savings", quantity: 1, lastPrice: 19200, category: .others)
     ]
 
+    // CATEGORY TOTALS CALCULATED FROM ASSETS
+    private var categories: [CategorySummary] {
+        NetWorthCategory.allCases.map { category in
+            let total = assets
+                .filter { $0.category == category }
+                .reduce(0) { $0 + $1.value }
+
+            return CategorySummary(category: category, totalValue: total)
+        }
+    }
+
     private var totalNetWorth: Double {
-        categories.reduce(0) { $0 + $1.totalValue }
+        assets.reduce(0) { $0 + $1.value }
     }
 
     private func percent(for value: Double) -> Double {
         guard totalNetWorth > 0 else { return 0 }
-        return (value / totalNetWorth) * 100.0
+        return (value / totalNetWorth) * 100
     }
 
     private func destinationView(for category: NetWorthCategory) -> AnyView {
+
+        let filteredAssets = assets.filter { $0.category == category }
+
         switch category {
-        case .crypto: return AnyView(CryptoView())
-        case .stocks: return AnyView(StocksView())
-        case .realEstate: return AnyView(RealEstateView())
-        case .vehicles: return AnyView(VehiclesView())
-        case .others: return AnyView(OthersView())
+        case .crypto:
+            return AnyView(AssetListView(title: "Crypto", assets: filteredAssets))
+
+        case .stocks:
+            return AnyView(AssetListView(title: "Stocks", assets: filteredAssets))
+
+        case .realEstate:
+            return AnyView(AssetListView(title: "Real Estate", assets: filteredAssets))
+
+        case .vehicles:
+            return AnyView(AssetListView(title: "Vehicles", assets: filteredAssets))
+
+        case .others:
+            return AnyView(AssetListView(title: "Others", assets: filteredAssets))
         }
     }
 
     var body: some View {
+
         NavigationStack {
+
             ScrollView {
+
                 VStack(alignment: .leading, spacing: 16) {
 
-                    // TOP HEADER
+                    // NET WORTH CARD
                     NeonCard(title: nil) {
+
                         HStack(alignment: .firstTextBaseline) {
+
                             Text("NET WORTH")
                                 .font(.system(.headline, design: .monospaced))
                                 .foregroundStyle(FuturisticTheme.accent)
@@ -70,13 +100,17 @@ struct ContentView: View {
                         }
                     }
 
-                    // 1️⃣ NET WORTH COMPOSITION TABLE
+                    // CATEGORY TABLE
                     NeonCard(title: "Net Worth Composition") {
+
                         HStack {
+
                             Text("TYPE")
                                 .frame(maxWidth: .infinity, alignment: .leading)
+
                             Text("TOTAL")
                                 .frame(width: 140, alignment: .trailing)
+
                             Text("%")
                                 .frame(width: 70, alignment: .trailing)
                         }
@@ -87,10 +121,15 @@ struct ContentView: View {
                         Divider().opacity(0.25)
 
                         ForEach(categories) { item in
+
                             NavigationLink {
+
                                 destinationView(for: item.category)
+
                             } label: {
+
                                 HStack {
+
                                     Text(item.category.rawValue)
                                         .font(.system(.headline, design: .monospaced))
                                         .foregroundStyle(.white)
@@ -114,8 +153,9 @@ struct ContentView: View {
                         }
                     }
 
-                    // 2️⃣ PIE CHART (DUMMY DATA)
+                    // PIE CHART (still dummy for prototype)
                     NeonCard(title: "Composition Pie") {
+
                         Text("Pie chart uses dummy data for now.")
                             .font(.system(.subheadline, design: .monospaced))
                             .foregroundStyle(.secondary)
@@ -132,8 +172,9 @@ struct ContentView: View {
                             )
                     }
 
-                    // 3️⃣ NET WORTH HISTORY (DUMMY DATA)
+                    // HISTORY CHART
                     NeonCard(title: "Net Worth History") {
+
                         Text("Line chart uses dummy historical data for now.")
                             .font(.system(.subheadline, design: .monospaced))
                             .foregroundStyle(.secondary)
@@ -150,64 +191,45 @@ struct ContentView: View {
                             )
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
             }
             .scrollIndicators(.hidden)
             .background(FuturisticTheme.bg.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) { EmptyView() }
-            }
         }
     }
 }
 
-// MARK: - Placeholder Category Pages
+// MARK: - Asset List Screen
 
-struct CryptoView: View {
+struct AssetListView: View {
+
+    let title: String
+    let assets: [Asset]
+
     var body: some View {
-        categoryPlaceholder(title: "Crypto", subtitle: "Dummy holdings will be added next.")
-    }
-}
 
-struct StocksView: View {
-    var body: some View {
-        categoryPlaceholder(title: "Stocks", subtitle: "Dummy holdings will be added next.")
-    }
-}
+        List(assets) {
 
-struct RealEstateView: View {
-    var body: some View {
-        categoryPlaceholder(title: "Real Estate", subtitle: "Dummy assets will be added next.")
-    }
-}
+            asset in
 
-struct VehiclesView: View {
-    var body: some View {
-        categoryPlaceholder(title: "Vehicles", subtitle: "Dummy vehicles will be added next.")
-    }
-}
+            NavigationLink {
 
-struct OthersView: View {
-    var body: some View {
-        categoryPlaceholder(title: "Others", subtitle: "Dummy items will be added next.")
-    }
-}
+                AssetDetailView(asset: asset)
 
-// MARK: - Shared Placeholder Layout
+            } label: {
 
-@ViewBuilder
-private func categoryPlaceholder(title: String, subtitle: String) -> some View {
-    VStack(spacing: 12) {
-        Text(title)
-            .font(.system(.largeTitle, design: .monospaced))
-            .bold()
-        Text(subtitle)
-            .foregroundStyle(.secondary)
+                HStack {
+
+                    Text(asset.symbol)
+
+                    Spacer()
+
+                    Text("$\(asset.value, specifier: "%.2f")")
+                        .bold()
+                }
+            }
+        }
+        .navigationTitle(title)
     }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(FuturisticTheme.bg.ignoresSafeArea())
-    .navigationTitle(title)
-    .navigationBarTitleDisplayMode(.inline)
 }
