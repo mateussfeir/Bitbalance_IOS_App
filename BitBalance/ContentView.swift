@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Models
 
-enum NetWorthCategory: String, CaseIterable, Identifiable {
+enum NetWorthCategory: String, CaseIterable, Identifiable, Codable {
     case realEstate = "Real Estate"
     case crypto = "Crypto"
     case stocks = "Stocks"
@@ -21,22 +21,12 @@ struct CategorySummary: Identifiable {
 // MARK: - Main View
 
 struct ContentView: View {
-
-    // REAL PORTFOLIO DATA
-    @State private var assets: [Asset] = [
-        Asset(symbol: "BTC", quantity: 1.2, lastPrice: 60000, category: .crypto),
-        Asset(symbol: "ETH", quantity: 5, lastPrice: 3000, category: .crypto),
-        Asset(symbol: "AAPL", quantity: 50, lastPrice: 190, category: .stocks),
-        Asset(symbol: "TSLA", quantity: 20, lastPrice: 250, category: .stocks),
-        Asset(symbol: "Toronto Condo", quantity: 1, lastPrice: 170000, category: .realEstate),
-        Asset(symbol: "Car", quantity: 1, lastPrice: 38500, category: .vehicles),
-        Asset(symbol: "Cash Savings", quantity: 1, lastPrice: 19200, category: .others)
-    ]
+    @EnvironmentObject private var assetStore: AssetStore
 
     // CATEGORY TOTALS CALCULATED FROM ASSETS
     private var categories: [CategorySummary] {
         NetWorthCategory.allCases.map { category in
-            let total = assets
+            let total = assetStore.assets
                 .filter { $0.category == category }
                 .reduce(0) { $0 + $1.value }
 
@@ -45,7 +35,7 @@ struct ContentView: View {
     }
 
     private var totalNetWorth: Double {
-        assets.reduce(0) { $0 + $1.value }
+        assetStore.assets.reduce(0) { $0 + $1.value }
     }
 
     private func percent(for value: Double) -> Double {
@@ -54,24 +44,21 @@ struct ContentView: View {
     }
 
     private func destinationView(for category: NetWorthCategory) -> AnyView {
-
-        let filteredAssets = assets.filter { $0.category == category }
-
         switch category {
         case .crypto:
-            return AnyView(AssetListView(title: "Crypto", assets: filteredAssets))
+            return AnyView(AssetListView(title: "Crypto", category: .crypto))
 
         case .stocks:
-            return AnyView(AssetListView(title: "Stocks", assets: filteredAssets))
+            return AnyView(AssetListView(title: "Stocks", category: .stocks))
 
         case .realEstate:
-            return AnyView(AssetListView(title: "Real Estate", assets: filteredAssets))
+            return AnyView(AssetListView(title: "Real Estate", category: .realEstate))
 
         case .vehicles:
-            return AnyView(AssetListView(title: "Vehicles", assets: filteredAssets))
+            return AnyView(AssetListView(title: "Vehicles", category: .vehicles))
 
         case .others:
-            return AnyView(AssetListView(title: "Others", assets: filteredAssets))
+            return AnyView(AssetListView(title: "Others", category: .others))
         }
     }
 
@@ -82,6 +69,11 @@ struct ContentView: View {
             ScrollView {
 
                 VStack(alignment: .leading, spacing: 16) {
+                    if let marketDataMessage = assetStore.marketDataMessage {
+                        Text(marketDataMessage)
+                            .font(.system(.footnote, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                    }
 
                     // NET WORTH CARD
                     NeonCard(title: nil) {
@@ -155,12 +147,7 @@ struct ContentView: View {
 
                     // PIE CHART (still dummy for prototype)
                     NeonCard(title: "Composition Pie") {
-
-                        Text("Pie chart uses dummy data for now.")
-                            .font(.system(.subheadline, design: .monospaced))
-                            .foregroundStyle(.secondary)
-
-                        DummyPieChart()
+                        DummyPieChart(data: categories)
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
                                     .fill(Color.white.opacity(0.06))
@@ -175,7 +162,7 @@ struct ContentView: View {
                     // HISTORY CHART
                     NeonCard(title: "Net Worth History") {
 
-                        Text("Line chart uses dummy historical data for now.")
+                        Text("Net worth history will appear here as historical tracking is added.")
                             .font(.system(.subheadline, design: .monospaced))
                             .foregroundStyle(.secondary)
 
@@ -195,7 +182,37 @@ struct ContentView: View {
             }
             .scrollIndicators(.hidden)
             .background(FuturisticTheme.bg.ignoresSafeArea())
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        Task {
+                            await assetStore.refreshPrices(trigger: "manual refresh")
+                        }
+                    } label: {
+                        if assetStore.isRefreshingPrices {
+                            ProgressView()
+                        } else {
+                            Label("Refresh", systemImage: "arrow.clockwise")
+                        }
+                    }
+                    .disabled(assetStore.isRefreshingPrices)
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        AddEditAssetView()
+                    } label: {
+                        Label("Add Asset", systemImage: "plus")
+                    }
+                }
+            }
             .navigationBarTitleDisplayMode(.inline)
+            .task {
+                await assetStore.refreshPrices(trigger: "portfolio screen appeared")
+            }
+            .refreshable {
+                await assetStore.refreshPrices(trigger: "pull to refresh")
+            }
         }
     }
 }
@@ -203,9 +220,14 @@ struct ContentView: View {
 // MARK: - Asset List Screen
 
 struct AssetListView: View {
+    @EnvironmentObject private var assetStore: AssetStore
 
     let title: String
-    let assets: [Asset]
+    let category: NetWorthCategory
+
+    private var assets: [Asset] {
+        assetStore.assets.filter { $0.category == category }
+    }
 
     var body: some View {
 
@@ -215,7 +237,7 @@ struct AssetListView: View {
 
             NavigationLink {
 
-                AssetDetailView(asset: asset)
+                AssetDetailView(assetID: asset.id)
 
             } label: {
 
@@ -231,5 +253,11 @@ struct AssetListView: View {
             }
         }
         .navigationTitle(title)
+        .task {
+            await assetStore.refreshPrices(trigger: "\(title) screen appeared")
+        }
+        .refreshable {
+            await assetStore.refreshPrices(trigger: "\(title) pull to refresh")
+        }
     }
 }

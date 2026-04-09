@@ -58,8 +58,3 @@ struct DummyLineChart: View {
 private func daysAgo(_ days: Int) -> Date {
     Calendar.current.date(byAdding: .day, value: -days, to: Date())!
 }
-
-#Preview {
-    DummyLineChart()
-}
-

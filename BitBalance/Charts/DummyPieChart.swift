@@ -2,27 +2,27 @@ import SwiftUI
 import Charts
 
 struct DummyPieChart: View {
+    let data: [CategorySummary]
 
-    let data: [(category: String, value: Double)] = [
-        ("Real Estate", 47.47),
-        ("Crypto", 26.38),
-        ("Stocks", 10.03),
-        ("Vehicles", 10.75),
-        ("Others", 5.36)
-    ]
+    private var populatedData: [CategorySummary] {
+        data.filter { $0.totalValue > 0 }
+    }
 
     var body: some View {
-        Chart(data, id: \.category) { item in
-            SectorMark(
-                angle: .value("Percentage", item.value)
-            )
-            .foregroundStyle(by: .value("Category", item.category))
+        Group {
+            if populatedData.isEmpty {
+                ContentUnavailableView("No Asset Data", systemImage: "chart.pie")
+                    .frame(height: 220)
+            } else {
+                Chart(populatedData) { item in
+                    SectorMark(
+                        angle: .value("Value", item.totalValue)
+                    )
+                    .foregroundStyle(by: .value("Category", item.category.rawValue))
+                }
+                .chartLegend(position: .bottom, spacing: 12)
+                .frame(height: 220)
+            }
         }
-        .chartLegend(.hidden)
-        .frame(height: 220)
     }
-}
-
-#Preview {
-    DummyPieChart()
 }
